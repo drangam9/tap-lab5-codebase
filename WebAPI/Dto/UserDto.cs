@@ -1,3 +1,5 @@
+using DataLayer.Models;
+
 namespace WebAPI.Dto;
 
 public class UserDto
@@ -6,4 +8,6 @@ public class UserDto
     public string Email { get; set; }
     public string Password { get; set; }
     public Guid TypeId { get; set; }
+    public Guid ProfileId { get; set; }
+    public List<Subscription>? Subscriptions { get; set; }
 }

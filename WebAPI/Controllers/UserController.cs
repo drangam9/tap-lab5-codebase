@@ -1,5 +1,6 @@
 using DataLayer.Models;
 using DataLayer.Repository;
+using DataLayer.Validation;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Dto;
 
@@ -11,11 +12,13 @@ namespace WebAPI.Controllers
     {
 
         private readonly IRepository<User> _userRepository;
+        private readonly IValidation _validation;
 
 
-        public UserController(IRepository<User> userRepository)
+        public UserController(IRepository<User> userRepository, IValidation validation)
         {
             _userRepository = userRepository;
+            _validation = validation;
         }
 
 
@@ -26,24 +29,54 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("add")]
-        public void Add(UserDto userDto)
+        public ObjectResult Add(UserDto userDto)
         {
-            _userRepository.Add(new User(userDto.Name, userDto.Email, userDto.Password, userDto.TypeId));
+            var error = _validation.ValidateName(userDto.Name);
+            if (error != null)
+            {
+                return BadRequest(error);
+            }
+            error = _validation.ValidateEmail(userDto.Email);
+            if (error != null)
+            {
+                return BadRequest(error);
+            }
+            _userRepository.Add(new User(userDto.Name, userDto.Email, userDto.Password, userDto.TypeId, userDto.ProfileId));
             _userRepository.SaveChanges();
+            return Ok(userDto);
         }
 
         [HttpPut("update")]
-        public void Update()
+        public ObjectResult Update(UserDto userDto, Guid userId)
         {
-            throw new NotImplementedException();
+            var userFromDb = _userRepository.Find(u => u.Id == userId).FirstOrDefault();
+            if (userFromDb == null)
+            {
+                return NotFound("User not found");
+            }
+
+            userFromDb.Name = userDto.Name;
+            userFromDb.Email = userDto.Email;
+            userFromDb.Password = userDto.Password;
+
+            userFromDb.TypeId = userDto.TypeId;
+            _userRepository.Update(userFromDb);
+
+            _userRepository.SaveChanges();
+            return Ok(userFromDb);
         }
 
 
 
-        [HttpPut("delete")]
-        public void Delete()
+        [HttpDelete("delete")]
+        public void Delete(Guid userId)
         {
-            throw new NotImplementedException();
+            var userFromDb = _userRepository.Find(u => u.Id == userId).FirstOrDefault();
+            if (userFromDb != null)
+            {
+                _userRepository.Remove(userFromDb);
+                _userRepository.SaveChanges();
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 
 using DataLayer;
 using DataLayer.Repository;
+using DataLayer.Validation;
 
 namespace WebAPI
 {
@@ -18,6 +19,7 @@ namespace WebAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped(typeof(IValidation), typeof(Validation));
             builder.Services.AddDbContext<MyDbContext>();
 
             var app = builder.Build();

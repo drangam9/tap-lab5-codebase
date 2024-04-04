@@ -7,8 +7,13 @@
             Name = name;
             Users = new List<User>();
         }
-
-        public Guid Id { get; set; }
+        public UserType(Guid id, string name)
+        {
+            Id = id;
+            Name = name;
+            Users = new List<User>();
+        }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         public string Name { get; set; }
 
